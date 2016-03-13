@@ -69,8 +69,11 @@ function Set-TargetResource
 
             if($Certificate)
             {
-                Write-Verbose 'Configuring IIS Certificate Binding'
+                Write-Verbose "Removing existing binding for port $Port"
+                Remove-Item IIS:\SSLBindings\0.0.0.0!$Port -ErrorAction Ignore
 
+                Write-Verbose "Creating a new binding using the supplied certificate"
+                $null = Get-Item -Path "Cert:\LocalMachine\MY\$CertificateThumbPrint" | New-Item IIS:\SSLBindings\0.0.0.0!$Port
 
 
                 $VirtualRoots = @('ApiRemoting30', 'ClientWebService', 'DSSAuthWebService', 'ServerSyncWebService', 'SimpleAuthWebService')
@@ -86,13 +89,9 @@ function Set-TargetResource
                 & "$WsusToolsDir\wsusutil.exe" configuressl $WsusFQDN
             }
 
-                
+            Write-Verbose "Get WSUS Subscription and perform initial synchronization to get latest categories" -Verbose
 
-
-
-
-
-            }
+            
             
 
         }
